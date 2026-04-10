@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Trivia de Nuestra Historia 💖</title>
+  <style>
+    :root {
+      --bg1: #fff0f6;
+      --bg2: #ffdce8;
+      --bg3: #ffeef5;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #4a1f34;
+      --muted: #81556a;
+      --accent: #ff5c93;
+      --accent-2: #ff7cab;
+      --success: #1da96a;
+      --error: #eb4a6a;
+      --shadow: 0 18px 40px rgba(131, 42, 76, 0.15);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(255,240,246,0.78), rgba(255,220,232,0.84)),
+        var(--bg-image, url('http://imgfz.com/i/rY2Cja5.jpeg')) center/cover fixed no-repeat;
+    }
+
+    body {
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: calc(100dvh - 28px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.65);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(30px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      width: 120px;
+      height: 120px;
+      background: #ffc3d8;
+      top: -30px;
+      left: -20px;
+    }
+
+    .glow-2 {
+      width: 160px;
+      height: 160px;
+      background: #ffd8e7;
+      bottom: -50px;
+      right: -40px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .center { text-align: center; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,92,147,0.12);
+      color: #d74479;
+      font-size: 0.88rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    .hero {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      border-radius: 22px;
+      margin: 16px 0;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+      background: #ffdbe8;
+    }
+
+    .cute-note {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .start-btn,
+    .next-btn,
+    .restart-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 18px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 14px 26px rgba(255,92,147,0.28);
+      transition: transform 0.18s ease, opacity 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .start-btn:active,
+    .next-btn:active,
+    .restart-btn:active {
+      transform: scale(0.985);
+    }
+
+    .next-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .progress-wrap {
+      margin-bottom: 14px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.9);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff86b3, #ff5c93);
+      transition: width 0.35s ease;
+    }
+
+    .question {
+      font-size: 1.28rem;
+      font-weight: 900;
+      margin: 6px 0 14px;
+      line-height: 1.25;
+    }
+
+    .options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: white;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .option:hover {
+      transform: translateY(-1px);
+    }
+
+    .option:active {
+      transform: scale(0.985);
+    }
+
+    .option.correct {
+      background: rgba(29,169,106,0.12);
+      outline: 2px solid rgba(29,169,106,0.35);
+    }
+
+    .option.wrong {
+      background: rgba(235,74,106,0.12);
+      outline: 2px solid rgba(235,74,106,0.28);
+      animation: shake 0.28s linear;
+    }
+
+    .feedback {
+      min-height: 52px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 900;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.22s ease;
+    }
+
+    .feedback.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feedback.success {
+      background: rgba(29,169,106,0.13);
+      color: #12814f;
+    }
+
+    .feedback.error {
+      background: rgba(235,74,106,0.13);
+      color: #cf3456;
+    }
+
+    .emoji-big {
+      font-size: 3.2rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: #d74479;
+      margin-top: 12px;
+    }
+
+    .surprise-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255,92,147,0.12), rgba(255,255,255,0.7));
+      border: 1px solid rgba(255,92,147,0.14);
+      font-weight: 800;
+      line-height: 1.55;
+      color: #7d3955;
+    }
+
+    .mini-hearts {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      letter-spacing: 4px;
+      animation: floatHearts 1.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-2px); }
+    }
+
+    @keyframes floatHearts {
+      from { transform: translateY(0); }
+      to { transform: translateY(-4px); }
+    }
+
+    @media (min-width: 480px) {
+      .content { padding: 22px; }
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+
+      <div class="content">
+        <section id="startScreen" class="screen active center">
+          <div class="pill">💖 Tengo una sorpresa para mi 🐼❤️</div>
+          <h1>Una pequeña trivia de nuestro largo camino</h1>
+          <p class="subtitle">
+            Toca la pantalla para empezar con la musica y luego le das al boton de abajo para empezar con la trivia ✨
+          </p>
+
+          <img
+            class="hero"
+            src="http://imgfz.com/i/Kkudpnt.jpeg"
+            alt="Portada romántica"
+          />
+
+          <button id="startBtn" class="start-btn">Empezar con la trivia 💘</button>
+          <p class="cute-note">Espero que te guste este pequeño detalle pechocha jejeje, si respondes todo bien, tendras una sorpresita 🙊</p>
+        </section>
+
+        <section id="quizScreen" class="screen">
+          <div class="progress-wrap">
+            <div class="progress-top">
+              <span id="questionCounter">Pregunta 1 de 10</span>
+              <span id="scoreCounter">Puntaje: 0</span>
+            </div>
+            <div class="progress-bar">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <img id="questionImage" class="hero" src="" alt="Imagen de la pregunta" />
+          <div id="questionText" class="question"></div>
+          <div id="optionsContainer" class="options"></div>
+          <div id="feedback" class="feedback"></div>
+          <button id="nextBtn" class="next-btn" disabled>Siguiente pregunta</button>
+        </section>
+
+        <section id="endScreen" class="screen center">
+          <span class="emoji-big">🎁</span>
+          <h1>¡Felicidades mi reina!</h1>
+          <p class="subtitle" id="finalMessage"></p>
+          <div class="score" id="finalScore"></div>
+          <div class="surprise-box">
+            Felicidades mi reina, ahora cierra los ojitos 🙈💖
+            <div class="mini-hearts">💗 💕 💘 💝</div>
+          </div>
+          <button id="restartBtn" class="restart-btn">Jugar otra vez</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================================
+    // CONFIGURACIÓN GENERAL
+    // ========================================================
+    const settings = {
+      // CAMBIA AQUÍ LA IMAGEN DE FONDO GENERAL DE TODA LA PÁGINA
+      backgroundImage: "http://imgfz.com/i/rY2Cja5.jpeg",
+
+      // MENSAJE FINAL PERSONALIZADO
+      finalPrizeMessage: "Felicidades mi 🐼❤️, te ganaste una sorpresa jejeje💖, ahora cierra los ojitos 🙈",
+
+      // SONIDOS: puedes poner archivos .mp3, .wav, .ogg
+      // Si no quieres usar archivos, déjalos vacíos: ""
+      correctSound: "audio/correcto.mp3",
+      wrongSound: "audio/incorrecto.mp3",
+      backgroundMusic: "audio/musica.mp3",
+
+      // volumen de la música de fondo
+      backgroundMusicVolume: 0.35,
+
+      // si quieres que la música se repita
+      backgroundMusicLoop: true
+    };
+
+    // Aplica imagen de fondo
+    document.documentElement.style.setProperty(
+      '--bg-image',
+      `url('${settings.backgroundImage}')`
+    );
+
+    // ========================================================
+    // EDITA AQUÍ TUS 10 PREGUNTAS
+    // correctAnswer empieza desde 0
+    // Ejemplo: 0 = primera opción, 1 = segunda, etc.
+    // Puedes usar imágenes locales como: "img/foto1.jpg"
+    // ========================================================
+    const questions = [
+      {
+        image: "img/imagen1.jpg",
+        question: "¿Dónde nos conocimos por primera vez?",
+        options: ["En el cine", "En una cafetería", "En el parque", "En un restaurante"],
+        correctAnswer: 0
+      },
+      {
+        image: "img/imagen2.jpg",
+        question: "¿Qué comida nos encanta compartir juntos?",
+        options: ["Pollito", "Chicharron de pescado", "Cevichito", "Caldo de gallina"],
+        correctAnswer: 2
+      },
+      {
+        image: "img/imagen3.jpg",
+        question: "¿Qué detalle te di y nunca olvidaste?",
+        options: ["Una carta", "Un peluche", "Un arreglo de flores", "Un anillo"],
+        correctAnswer: 2
+      },
+      {
+        image: "img/imagen4.jpg",
+        question: "¿A dónde nos gustaría viajar juntos?",
+        options: ["A Cusco", "A Puno", "A Huaraz", "A todos los lugares"],
+        correctAnswer: 3
+      },
+      {
+        image: "img/imagen5.jpg",
+        question: "¿Qué tipo de cancion bailamos más?",
+        options: ["Huaynito", "Cumbia", "Merengue", "De todo un poco"],
+        correctAnswer: 3
+      },
+      {
+        image: "img/imagen6.jpg",
+        question: "¿Quien fue el que dio el primer paso?",
+        options: ["Yo", "Tú", "Los dos", "Nu she"],
+        correctAnswer: 1
+      },
+      {
+        image: "img/imagen7.jpg",
+        question: "¿Cuál es mi apodo favorito para ti?",
+        options: ["Mi amor", "Bebé", "Princesa", "Mi 🐼❤️"],
+        correctAnswer: 3
+      },
+      {
+        image: "img/imagen8.jpg",
+        question: "¿Qué plan nos gusta más hacer juntos?",
+        options: ["Ver animes", "Salir a comer", "Caminar", "Dormir"],
+        correctAnswer: 1
+      },
+      {
+        image: "img/imagen9.jpg",
+        question: "¿Qué me encanta más de ti?",
+        options: ["Tu carita", "Tu mirada", "Tu forma de ser", "Todas las anteriores"],
+        correctAnswer: 3
+      },
+      {
+        image: "img/imagen10.jpg",
+        question: "¿Te imaginas que no nos hubieramos conocido?",
+        options: ["Pucha si", "Nu she", "No quiero ni pensarlo 😭😢", "Todas las anteriores"],
+        correctAnswer: 2
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answeredCorrectly = false;
+
+    const startScreen = document.getElementById('startScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const endScreen = document.getElementById('endScreen');
+
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    const questionCounter = document.getElementById('questionCounter');
+    const scoreCounter = document.getElementById('scoreCounter');
+    const progressFill = document.getElementById('progressFill');
+    const questionImage = document.getElementById('questionImage');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedback = document.getElementById('feedback');
+    const finalMessage = document.getElementById('finalMessage');
+    const finalScore = document.getElementById('finalScore');
+
+    // audios con archivo
+    const correctAudio = settings.correctSound ? new Audio(settings.correctSound) : null;
+    if (correctAudio) correctAudio.volume = 0.15;
+    const wrongAudio = settings.wrongSound ? new Audio(settings.wrongSound) : null;
+    if (wrongAudio) wrongAudio.volume = 0.08;
+    const bgMusic = settings.backgroundMusic ? new Audio(settings.backgroundMusic) : null;
+
+    if (bgMusic) {
+      bgMusic.loop = settings.backgroundMusicLoop;
+      bgMusic.volume = settings.backgroundMusicVolume;
+    }
+
+    function switchScreen(screen) {
+      [startScreen, quizScreen, endScreen].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function playFallbackTone(type) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const ctx = new AudioContextClass();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      if (type === 'success') {
+        oscillator.frequency.setValueAtTime(650, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.18);
+        oscillator.type = 'sine';
+      } else {
+        oscillator.frequency.setValueAtTime(250, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.18);
+        oscillator.type = 'sawtooth';
+      }
+
+      gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.13, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.24);
+      oscillator.onended = () => ctx.close();
+    }
+
+    function playSound(type) {
+      if (type === 'success' && correctAudio) {
+        correctAudio.currentTime = 0;
+        correctAudio.play().catch(() => playFallbackTone('success'));
+        return;
+      }
+
+      if (type === 'error' && wrongAudio) {
+        wrongAudio.currentTime = 0;
+        wrongAudio.play().catch(() => playFallbackTone('error'));
+        return;
+      }
+
+      playFallbackTone(type === 'success' ? 'success' : 'error');
+    }
+
+    function startBackgroundMusic() {
+      if (!bgMusic) return;
+      bgMusic.play().catch(() => {});
+    }
+
+    function showFeedback(message, type) {
+      feedback.textContent = message;
+      feedback.className = `feedback show ${type}`;
+    }
+
+    function clearFeedback() {
+      feedback.textContent = '';
+      feedback.className = 'feedback';
+    }
+
+    function renderQuestion() {
+      const q = questions[currentQuestion];
+      answeredCorrectly = false;
+      nextBtn.disabled = true;
+      clearFeedback();
+
+      questionCounter.textContent = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
+      scoreCounter.textContent = `Puntaje: ${score}`;
+      progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
+
+      questionImage.src = q.image;
+      questionImage.alt = `Pregunta ${currentQuestion + 1}`;
+      questionText.textContent = q.question;
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((optionText, index) => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.textContent = optionText;
+        button.addEventListener('click', () => handleAnswer(index, button));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function handleAnswer(selectedIndex, selectedButton) {
+      const q = questions[currentQuestion];
+      if (answeredCorrectly) return;
+
+      if (selectedIndex === q.correctAnswer) {
+        selectedButton.classList.add('correct');
+        showFeedback('✅ ¡Correcto! Muy bien mi 🐼❤️', 'success');
+        playSound('success');
+        answeredCorrectly = true;
+        score++;
+        scoreCounter.textContent = `Puntaje: ${score}`;
+        nextBtn.disabled = false;
+
+        [...optionsContainer.children].forEach(btn => {
+          btn.disabled = true;
+          if (btn !== selectedButton) btn.style.opacity = '0.7';
+        });
+      } else {
+        selectedButton.classList.remove('wrong');
+        void selectedButton.offsetWidth;
+        selectedButton.classList.add('wrong');
+        showFeedback('❌ No mi 🐼❤️, intenta otra vez jejeje', 'error');
+        playSound('error');
+      }
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        renderQuestion();
+      } else {
+        progressFill.style.width = '100%';
+        showFinalScreen();
+      }
+    }
+
+    function showFinalScreen() {
+      switchScreen(endScreen);
+      finalScore.textContent = `Obtuviste ${score} de ${questions.length} respuestas correctas ✨`;
+      finalMessage.textContent = 'Terminaste toda la trivia y respondiste todo bien mi reina jejeje';
+      document.querySelector('.surprise-box').innerHTML = `${settings.finalPrizeMessage}<div class="mini-hearts">💗 💕 💘 💝</div>`;
+      playSound('success');
+    }
+
+    function startGame() {
+      currentQuestion = 0;
+      score = 0;
+      startBackgroundMusic();
+      switchScreen(quizScreen);
+      renderQuestion();
+    }
+
+    function unlockAndStart() {
+      startBackgroundMusic();
+      startGame();
+    }
+
+    startBtn.addEventListener('click', unlockAndStart);
+
+    // También intenta iniciar la música con el primer toque en cualquier parte de la portada
+    startScreen.addEventListener('click', () => {
+      if (startScreen.classList.contains('active')) {
+        startBackgroundMusic();
+      }
+    }, { once: true });
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
